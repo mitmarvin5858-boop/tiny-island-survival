@@ -10,7 +10,7 @@
         canvas { background:#0b8c5e; border:6px solid #d4a017; border-radius:8px; image-rendering:pixelated; width:100%; max-height:70vh; flex: 1; }
         #ui { position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.75); padding:12px; border-radius:8px; text-align:left; font-size:14px; z-index: 10; }
         button { background:#d4a017; color:#000; border:none; padding:12px 16px; margin:6px 0; border-radius:6px; cursor:pointer; font-weight:bold; font-size:15px; width:100%; }
-        button:hover, button:active { background:#f5c63d; }
+        button:active { background:#f5c63d; }
 
         #joystick-container { position: absolute; bottom: 20px; left: 20px; width: 120px; height: 120px; z-index: 20; }
         #joystick { width: 100%; height: 100%; background: rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.6); border-radius: 50%; position: relative; }
@@ -79,19 +79,16 @@
         let coins = 0;
         let stats = { health: 100, hunger: 80, energy: 100, day: 1 };
         let progress = 0;
-        let hasAxe = false;
-        let hasShelter = false;
         let gameOver = false;
         let godMode = false;
 
-        let joystickActive = false;
         let moveX = 0, moveY = 0;
         const joystick = document.getElementById('joystick');
         const knob = document.getElementById('joystick-knob');
 
         function updateJoystick(e) {
             const rect = joystick.getBoundingClientRect();
-            const touch = e.touches ? e.touches[0] : e;
+            const touch = e.touches[0];
             let dx = touch.clientX - rect.left - 60;
             let dy = touch.clientY - rect.top - 60;
             const dist = Math.sqrt(dx*dx + dy*dy);
@@ -102,10 +99,9 @@
             moveY = dy / 50;
         }
 
-        joystick.addEventListener('touchstart', e => { joystickActive = true; updateJoystick(e); });
-        joystick.addEventListener('touchmove', e => { if (joystickActive) updateJoystick(e); });
+        joystick.addEventListener('touchstart', e => { updateJoystick(e); });
+        joystick.addEventListener('touchmove', e => { updateJoystick(e); });
         joystick.addEventListener('touchend', () => { 
-            joystickActive = false; 
             knob.style.left = '40px'; knob.style.top = '40px'; 
             moveX = 0; moveY = 0; 
         });

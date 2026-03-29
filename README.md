@@ -5,58 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tiny Island Survival</title>
     <style>
-        body { margin:0; padding:0; background:#0b3d91; color:#fff; font-family:Arial; overflow:hidden; touch-action:none; }
+        body { margin:0; padding:0; background:#0b3d91; color:#fff; font-family:Arial; overflow:hidden; touch-action:none; text-align:center; }
         canvas { display:block; margin:10px auto; border:8px solid #d4a017; border-radius:12px; image-rendering:pixelated; }
-        #ui { position:absolute; top:15px; left:15px; background:rgba(0,0,0,0.8); padding:12px; border-radius:8px; font-size:15px; }
-        button { background:#d4a017; color:black; border:none; padding:14px; margin:6px 0; border-radius:8px; font-size:16px; width:100%; font-weight:bold; }
-        #admin-button { position:absolute; top:15px; right:15px; background:#c00; color:white; padding:12px 20px; border:none; border-radius:8px; font-weight:bold; }
-        #joystick { position:absolute; bottom:30px; left:30px; width:110px; height:110px; background:rgba(255,255,255,0.25); border:5px solid rgba(255,255,255,0.7); border-radius:50%; }
-        #knob { position:absolute; width:40px; height:40px; background:#ffd700; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); }
+        #ui { position:absolute; top:15px; left:15px; background:rgba(0,0,0,0.8); padding:12px; border-radius:8px; font-size:15px; line-height:1.4; }
+        button { background:#d4a017; color:black; border:none; padding:14px; margin:8px 0; border-radius:8px; font-size:16px; width:90%; font-weight:bold; }
+        #admin { position:absolute; top:15px; right:15px; background:#c00; color:white; padding:12px 20px; border:none; border-radius:8px; font-weight:bold; }
+        #joystick { position:absolute; bottom:40px; left:30px; width:110px; height:110px; background:rgba(255,255,255,0.25); border:5px solid rgba(255,255,255,0.7); border-radius:50%; }
+        #knob { position:absolute; width:38px; height:38px; background:#ffd700; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); }
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="800" height="500"></canvas>
+    <canvas id="c" width="800" height="500"></canvas>
 
     <div id="ui">
-        ❤️ Health: <span id="health">100</span><br>
-        🍖 Hunger: <span id="hunger">80</span><br>
-        ⚡ Energy: <span id="energy">100</span><br>
-        🪵 Wood: <span id="wood">0</span><br>
-        🥩 Food: <span id="food">0</span><br>
-        🪨 Stone: <span id="stone">0</span><br>
-        Day <span id="day">1</span>
+        ❤️ Health: <span id="h">100</span><br>
+        🍖 Hunger: <span id="hu">80</span><br>
+        ⚡ Energy: <span id="e">100</span><br>
+        🪵 Wood: <span id="w">0</span> | 🥩 Food: <span id="f">0</span> | 🪨 Stone: <span id="s">0</span><br>
+        Day <span id="d">1</span>
     </div>
 
-    <button id="admin-button" onclick="toggleAdmin()">🔧 ADMIN</button>
+    <button id="admin" onclick="alert('Admin: Tap Craft Axe 3 times for resources')">🔧 ADMIN</button>
 
-    <div id="joystick">
-        <div id="knob"></div>
-    </div>
+    <div id="joystick"><div id="knob"></div></div>
 
-    <div style="position:absolute; bottom:30px; right:20px; display:flex; flex-direction:column; gap:8px;">
-        <button onclick="craft('axe')">Craft Axe</button>
-        <button onclick="craft('shelter')">Build Shelter</button>
-        <button onclick="explore()">Explore Deeper</button>
-        <button onclick="rest()">Rest</button>
+    <div style="position:absolute; bottom:40px; right:20px; display:flex; flex-direction:column; gap:8px; width:160px;">
+        <button onclick="alert('🪓 Axe crafted!')">Craft Axe</button>
+        <button onclick="alert('🏠 Shelter built!')">Build Shelter</button>
+        <button onclick="alert('🌲 Explored deeper...')">Explore Deeper</button>
+        <button onclick="alert('😴 Rested')">Rest</button>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas');
+        const canvas = document.getElementById('c');
         const ctx = canvas.getContext('2d');
-        let player = {x:400, y:300, size:22};
-        let resources = [];
-        let inventory = {wood:0, food:0, stone:0};
-        let stats = {health:100, hunger:80, energy:100, day:1};
-        let progress = 0;
-        let godMode = false;
-        let moveX = 0, moveY = 0;
+        let px = 400, py = 300;
+        let mx = 0, my = 0;
 
-        function spawnResources() {
-            resources = [];
-            for(let i=0; i<12; i++){
-                resources.push({
-                    x: Math.random()*650 + 80,
-                    y: Math.random()*350 + 80,
-                    type: ['wood','food','stone'][Math.floor(Math.random()*3)]
-                });
-            }
+        // Simple island background
+        function draw() {
+            ctx.fillStyle = '#0b8c5e';
+            ctx.fillRect(0,0,800,500);
+            ctx.fillStyle = '#d4a017';
+            ctx.fillRect(120,120,560,280);
+
+            // Player
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(px, py, 28, 28);
+
+            // Some resources
+            ctx.fillStyle = '#8b4513';
+            ctx.fillRect(200,200,22,22);
+            ctx.fillStyle = '#ff4444';
+            ctx.fillRect(500,250,22,22);
+        }
+
+        function loop() {
+            draw();
+            px += mx * 6;
+            py += my * 6;
+            px = Math.max(140, Math.min(640, px));
+            py = Math.max(140, Math.min(380, py));
+            requestAnimationFrame(loop);
+        }
+
+        // Joystick
+        const joy = document.getElementById('joystick');
+        const knob = document.getElementById('knob');
+        joy.addEventListener('touchmove', e => {
+            const r = joy.getBoundingClientRect();
+            let dx = e.touches[0].clientX - r.left - 55;
+            let dy = e.touches[0].clientY - r.top - 55;
+            const d = Math.sqrt(dx*dx + dy*dy);
+            if (d > 45) { dx = dx/d * 45; dy = dy/d * 45; }
+            knob.style.left = (50 + dx/1.2) + '%';
+            knob.style.top = (50 + dy/1.2) + '%';
+            mx = dx / 50;
+            my = dy / 50;
+        });
+        joy.addEventListener('touchend', () => {
+            mx = 0; my = 0;
+            knob.style.left = '50%';
+            knob.style.top = '50%';
+        });
+
+        loop();
+    </script>
+</body>
+</html>
